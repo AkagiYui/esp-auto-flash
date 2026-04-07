@@ -12,6 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/Select'
+import { Switch } from '@/components/ui/Switch'
 
 const titleBarDragStyle: CSSProperties = {
     '--wails-draggable': 'drag',
@@ -56,16 +57,13 @@ export function TitleBar() {
             >
                 {/* 左侧区域紧贴红绿灯右侧，预留 macOS 安全距离 */}
                 <div
-                    className="absolute inset-y-0 left-[78px] flex items-center"
+                    className="absolute inset-y-0 left-[78px] flex items-center gap-3"
                     onDoubleClick={(event) => event.stopPropagation()}
                     style={titleBarNoDragStyle}
                 >
                     <Select defaultValue="default">
-                        <SelectTrigger className="h-8 w-[190px] gap-2 border-none bg-transparent px-2.5 text-sm shadow-none hover:bg-accent/70 focus:ring-0">
-                            <div className="flex min-w-0 items-center gap-2">
-                                <span className="rounded-full bg-primary/12 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
-                                    配置
-                                </span>
+                        <SelectTrigger className="h-8 w-[190px] border-none bg-transparent px-2.5 text-sm shadow-none hover:bg-accent/70 focus:ring-0">
+                            <div className="flex min-w-0 items-center">
                                 <SelectValue placeholder="选择配置文件" />
                             </div>
                         </SelectTrigger>
@@ -84,6 +82,12 @@ export function TitleBar() {
                             </SelectItem>
                         </SelectContent>
                     </Select>
+
+                    {/* 自动烧录开关仅提供界面状态，后续再接入真实逻辑 */}
+                    <label className="flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent/60">
+                        <span>自动烧录</span>
+                        <Switch aria-label="切换自动烧录" />
+                    </label>
                 </div>
 
                 {/* 中间标题层不接管鼠标事件，避免遮挡左右两侧可交互区域 */}
