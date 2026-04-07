@@ -5,7 +5,6 @@ import { Plus, X } from 'lucide-react'
 import {
     Select,
     SelectContent,
-    SelectItem,
     SelectSeparator,
     SelectTrigger,
     SelectValue,
@@ -20,6 +19,14 @@ const initialProfileOptions = [
     { label: '量产配置', value: 'factory' },
 ]
 
+/** 生成新的模拟配置，后续接入真实数据源时可替换为创建接口返回值 */
+function createMockProfile(nextIndex: number) {
+    return {
+        label: `新配置 ${nextIndex}`,
+        value: `mock-profile-${nextIndex}`,
+    }
+}
+
 /** 标题栏配置切换区组件，统一承载配置选择与自动烧录开关 */
 export function ProfileSwitcher() {
     const [autoFlashEnabled, setAutoFlashEnabled] = useState(false)
@@ -33,6 +40,16 @@ export function ProfileSwitcher() {
         () => profileOptions.find((option) => option.value === selectedProfile)?.label,
         [profileOptions, selectedProfile]
     )
+
+    /** 点击新增时直接追加一条模拟配置，并自动切换到新建项 */
+    function handleCreateProfile() {
+        const nextProfile = createMockProfile(profileOptions.length + 1)
+        const nextProfileOptions = [...profileOptions, nextProfile]
+
+        setProfileOptions(nextProfileOptions)
+        setSelectedProfile(nextProfile.value)
+        setSelectOpen(false)
+    }
 
     /** 用户确认后再真正删除配置，避免标题栏区域误触导致配置丢失 */
     function handleDeleteProfile(profileValue: string) {
@@ -124,12 +141,14 @@ export function ProfileSwitcher() {
                         </SelectPrimitive.Item>
                     ))}
                     <SelectSeparator />
-                    <SelectItem value="create-new">
-                        <span className="flex items-center gap-2">
-                            <Plus className="h-4 w-4" />
-                            新增配置
-                        </span>
-                    </SelectItem>
+                    <button
+                        type="button"
+                        className="flex pointer w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
+                        onClick={handleCreateProfile}
+                    >
+                        <Plus className="h-4 w-4" />
+                        新增配置
+                    </button>
                 </SelectContent>
             </Select>
         </div>
