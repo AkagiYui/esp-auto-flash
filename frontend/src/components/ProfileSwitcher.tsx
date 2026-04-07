@@ -34,26 +34,26 @@ export function ProfileSwitcher() {
     return (
         <div className="flex items-center gap-2">
             <Select open={selectOpen} onOpenChange={setSelectOpen} value={selectedProfile} onValueChange={setSelectedProfile}>
-                <SelectTrigger className="h-8 w-[180px] border-none bg-transparent px-2.5 text-sm shadow-none hover:bg-accent/70 focus:ring-0">
-                    <div className="flex min-w-0 flex-1 items-center" title='点击切换配置'>
-                        <SelectValue placeholder="选择配置">
-                            {selectedProfileLabel}
-                        </SelectValue>
-                    </div>
-                    {/* 在触发器内部单独拦截事件，避免点击开关时误触发下拉框 */}
-                    <div
-                        className="mr-3 flex items-center"
-                        onClick={(event) => event.stopPropagation()}
-                        onPointerDown={(event) => event.stopPropagation()}
-                    >
+                {/* 用相对定位叠放开关，既保留“开关在选择器内部”的视觉效果，也避免 button 嵌套 button */}
+                <div className="relative w-[180px]">
+                    <SelectTrigger className="h-8 w-[180px] border-none bg-transparent px-2.5 pr-1.5 text-sm shadow-none hover:bg-accent/70 focus:ring-0">
+                        <div className="flex min-w-0 flex-1 items-center" title="点击切换配置">
+                            <SelectValue placeholder="选择配置">
+                                {selectedProfileLabel}
+                            </SelectValue>
+                        </div>
+                    </SelectTrigger>
+                    {/* 开关绝对定位在触发器内部右侧，单独承载点击事件 */}
+                    <div className="pointer-events-none absolute inset-y-0 right-7 flex items-center">
                         <Switch
+                            className="pointer-events-auto"
                             title="切换自动烧录"
                             aria-label="切换自动烧录"
                             checked={selectedProfileRunning}
                             onCheckedChange={setSelectedProfileRunning}
                         />
                     </div>
-                </SelectTrigger>
+                </div>
                 <SelectContent align="start">
                     {profileOptions.map((option) => (
                         <SelectPrimitive.Item
