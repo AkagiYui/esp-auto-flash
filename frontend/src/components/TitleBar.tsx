@@ -22,7 +22,7 @@ const titleBarNoDragStyle: CSSProperties = {
     '--wails-draggable': 'no-drag',
 } as CSSProperties
 
-/** 模拟配置文件列表，后续再接入真实配置管理逻辑 */
+/** 模拟配置列表，后续再接入真实配置管理逻辑 */
 const profileOptions = [
     { label: '默认配置', value: 'default' },
     { label: '开发板配置', value: 'dev-board' },
@@ -64,7 +64,7 @@ export function TitleBar() {
                     <Select defaultValue="default">
                         <SelectTrigger className="h-8 w-[190px] border-none bg-transparent px-2.5 text-sm shadow-none hover:bg-accent/70 focus:ring-0">
                             <div className="flex min-w-0 items-center">
-                                <SelectValue placeholder="选择配置文件" />
+                                <SelectValue placeholder="选择配置" />
                             </div>
                         </SelectTrigger>
                         <SelectContent align="start">
@@ -77,7 +77,7 @@ export function TitleBar() {
                             <SelectItem value="create-new">
                                 <span className="flex items-center gap-2">
                                     <Plus className="h-4 w-4" />
-                                    新增配置文件
+                                    新增配置
                                 </span>
                             </SelectItem>
                         </SelectContent>
