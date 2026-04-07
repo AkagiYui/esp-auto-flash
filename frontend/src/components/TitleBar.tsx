@@ -1,6 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { Window } from '@wailsio/runtime'
-import { Home, Logs, Settings } from 'lucide-react'
+import { CornerUpLeft, Logs, Settings } from 'lucide-react'
 import type { CSSProperties, MouseEvent } from 'react'
 
 import { ProfileSwitcher } from '@/components/ProfileSwitcher'
@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 type TitleBarNavItem = {
     to: '/' | '/logs' | '/settings'
     label: string
-    icon: typeof Home
+    icon: typeof CornerUpLeft
     isActive: (pathname: string) => boolean
 }
 
@@ -25,9 +25,9 @@ const titleBarNoDragStyle: CSSProperties = {
 const titleBarNavItems: TitleBarNavItem[] = [
     {
         to: '/',
-        label: '首页',
-        icon: Home,
-        // 首页仅在根路由激活，避免与其他页面匹配冲突。
+        label: '返回配置',
+        icon: CornerUpLeft,
+        // 返回配置入口仅在根路由激活，避免与其他页面匹配冲突。
         isActive: (pathname) => pathname === '/',
     },
     {
@@ -98,23 +98,25 @@ export function TitleBar() {
                     style={titleBarNoDragStyle}
                 >
                     <nav className="flex items-center gap-1">
-                        {/* 导航入口按首页、日志、设置排列，便于后续扩展更多页面 */}
-                        {titleBarNavItems.map((item) => {
-                            const Icon = item.icon
-                            const isActive = item.isActive(pathname)
+                        {/* 非首页时显示返回配置入口，其余导航始终保留。 */}
+                        {titleBarNavItems
+                            .filter((item) => item.to !== '/' || pathname !== '/')
+                            .map((item) => {
+                                const Icon = item.icon
+                                const isActive = item.isActive(pathname)
 
-                            return (
-                                <Button key={item.to} variant="ghost" size="sm" asChild>
-                                    <Link
-                                        to={item.to}
-                                        className={cn(isActive && 'text-primary hover:text-primary')}
-                                    >
-                                        <Icon className="h-4 w-4" />
-                                        {item.label}
-                                    </Link>
-                                </Button>
-                            )
-                        })}
+                                return (
+                                    <Button key={item.to} variant="ghost" size="sm" asChild>
+                                        <Link
+                                            to={item.to}
+                                            className={cn(isActive && 'text-primary hover:text-primary')}
+                                        >
+                                            <Icon className="h-4 w-4" />
+                                            {item.label}
+                                        </Link>
+                                    </Button>
+                                )
+                            })}
                     </nav>
                 </div>
             </div>
