@@ -13,14 +13,14 @@ import {
 } from '@/components/ui/Select'
 import { Switch } from '@/components/ui/Switch'
 import {
-    autoFlashEnabledAtom,
     profileOptionsAtom,
     selectedProfileAtom,
+    selectedProfileRunningAtom,
 } from '@/lib/profile-store'
 
 /** 标题栏配置切换区组件，统一承载配置选择与自动烧录开关 */
 export function ProfileSwitcher() {
-    const [autoFlashEnabled, setAutoFlashEnabled] = useAtom(autoFlashEnabledAtom)
+    const [selectedProfileRunning, setSelectedProfileRunning] = useAtom(selectedProfileRunningAtom)
     const profileOptions = useAtomValue(profileOptionsAtom)
     const [selectedProfile, setSelectedProfile] = useAtom(selectedProfileAtom)
     const [selectOpen, setSelectOpen] = useState(false)
@@ -49,8 +49,8 @@ export function ProfileSwitcher() {
                         <Switch
                             title="切换自动烧录"
                             aria-label="切换自动烧录"
-                            checked={autoFlashEnabled}
-                            onCheckedChange={setAutoFlashEnabled}
+                            checked={selectedProfileRunning}
+                            onCheckedChange={setSelectedProfileRunning}
                         />
                     </div>
                 </SelectTrigger>
