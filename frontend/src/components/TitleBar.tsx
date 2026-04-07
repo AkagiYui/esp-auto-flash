@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { Window } from '@wailsio/runtime'
-import { Home, Settings } from 'lucide-react'
+import { Home, Logs, Settings } from 'lucide-react'
 import type { CSSProperties, MouseEvent } from 'react'
 
 import { ProfileSwitcher } from '@/components/ProfileSwitcher'
@@ -63,10 +63,17 @@ export function TitleBar() {
                     style={titleBarNoDragStyle}
                 >
                     <nav className="flex items-center gap-1">
+                        {/* 导航入口按首页、日志、设置排列，便于后续扩展更多页面 */}
                         <Button variant="ghost" size="sm" asChild>
                             <Link to="/">
                                 <Home className="h-4 w-4" />
                                 首页
+                            </Link>
+                        </Button>
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link to="/logs">
+                                <Logs className="h-4 w-4" />
+                                日志
                             </Link>
                         </Button>
                         <Button variant="ghost" size="sm" asChild>
