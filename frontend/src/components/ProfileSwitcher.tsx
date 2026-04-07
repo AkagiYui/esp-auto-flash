@@ -10,6 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/Select'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { Switch } from '@/components/ui/Switch'
 
 /** 模拟配置列表，后续再接入真实配置管理逻辑 */
@@ -24,6 +25,8 @@ export function ProfileSwitcher() {
     const [autoFlashEnabled, setAutoFlashEnabled] = useState(false)
     const [profileOptions, setProfileOptions] = useState(initialProfileOptions)
     const [selectedProfile, setSelectedProfile] = useState(initialProfileOptions[0]?.value ?? '')
+    const [selectOpen, setSelectOpen] = useState(false)
+    const confirm = useConfirm()
 
     /** 当前选中配置的显示名称，删除后会自动回落到可用配置 */
     const selectedProfileLabel = useMemo(
@@ -31,17 +34,11 @@ export function ProfileSwitcher() {
         [profileOptions, selectedProfile]
     )
 
-    /** 删除配置前先确认，避免在标题栏区域误触导致配置丢失 */
+    /** 用户确认后再真正删除配置，避免标题栏区域误触导致配置丢失 */
     function handleDeleteProfile(profileValue: string) {
-        console.log(123)
         const profile = profileOptions.find((option) => option.value === profileValue)
+
         if (!profile) {
-            return
-        }
-
-        const confirmed = window.confirm(`确认删除配置“${profile.label}”吗？`)
-
-        if (!confirmed) {
             return
         }
 
@@ -55,9 +52,34 @@ export function ProfileSwitcher() {
         setSelectedProfile(nextProfileOptions[0]?.value ?? '')
     }
 
+    /** 通过全局确认弹窗函数式唤起删除确认，避免在 Select 内部耦合模态框布局 */
+    async function requestDeleteProfile(profileValue: string) {
+        const profile = profileOptions.find((option) => option.value === profileValue)
+
+        if (!profile) {
+            return
+        }
+
+        setSelectOpen(false)
+
+        const confirmed = await confirm({
+            title: '确认删除配置',
+            description: `删除后当前模拟配置列表中将不再保留“${profile.label}”。此操作不可撤销。`,
+            confirmText: '确认删除',
+            cancelText: '取消',
+            variant: 'destructive',
+        })
+
+        if (!confirmed) {
+            return
+        }
+
+        handleDeleteProfile(profileValue)
+    }
+
     return (
         <div className="flex items-center gap-2">
-            <Select value={selectedProfile} onValueChange={setSelectedProfile}>
+            <Select open={selectOpen} onOpenChange={setSelectOpen} value={selectedProfile} onValueChange={setSelectedProfile}>
                 <SelectTrigger className="h-8 w-[180px] border-none bg-transparent px-2.5 text-sm shadow-none hover:bg-accent/70 focus:ring-0">
                     <div className="flex min-w-0 flex-1 items-center" title='点击切换配置'>
                         <SelectValue placeholder="选择配置">
@@ -94,7 +116,7 @@ export function ProfileSwitcher() {
                                 onPointerDown={(event) => {
                                     event.preventDefault()
                                     event.stopPropagation()
-                                    handleDeleteProfile(option.value)
+                                    void requestDeleteProfile(option.value)
                                 }}
                             >
                                 <X className="h-3.5 w-3.5" />
