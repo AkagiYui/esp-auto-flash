@@ -1,6 +1,22 @@
+import {
+    closestCenter,
+    DndContext,
+    type DragEndEvent,
+    MouseSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core'
+import {
+    arrayMove,
+    SortableContext,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { useEffect, useMemo, useState } from 'react'
-import { Pencil, Plus, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, GripVertical, Pencil, Plus, Settings2, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import {
@@ -37,16 +53,140 @@ function createMockProfile(nextIndex: number) {
     }
 }
 
+type ProfileOption = {
+    label: string
+    value: string
+}
+
+type SortableProfileItemProps = {
+    index: number
+    option: ProfileOption
+    selectedProfile: string
+    totalCount: number
+    onMoveDown: (profileValue: string) => void
+    onMoveUp: (profileValue: string) => void
+    onRename: (profileValue: string) => void
+    onDelete: (profileValue: string) => void
+}
+
+/** 可排序的配置项，统一封装拖拽句柄、位移动画与行内操作按钮 */
+function SortableProfileItem({
+    index,
+    option,
+    selectedProfile,
+    totalCount,
+    onMoveDown,
+    onMoveUp,
+    onRename,
+    onDelete,
+}: SortableProfileItemProps) {
+    const {
+        attributes,
+        isDragging,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: option.value })
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    }
+
+    const isSelected = option.value === selectedProfile
+    const isLast = index === totalCount - 1
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={[
+                'flex items-center gap-3 rounded-lg border px-3 py-2 bg-background/70',
+                isDragging ? 'border-accent bg-accent/15 shadow-sm' : 'border-border/80',
+            ].join(' ')}
+        >
+            <button
+                type="button"
+                className="flex h-8 w-8 cursor-grab items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground active:cursor-grabbing"
+                title="拖拽调整顺序"
+                aria-label={`拖拽排序 ${option.label}`}
+                {...attributes}
+                {...listeners}
+            >
+                <GripVertical className="h-4 w-4" />
+            </button>
+
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                    <p className="truncate text-sm font-medium text-foreground">{option.label}</p>
+                    {isSelected ? (
+                        <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] text-accent-foreground">
+                            当前使用
+                        </span>
+                    ) : null}
+                </div>
+            </div>
+
+            <div className="flex items-center gap-1">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={index === 0}
+                    onClick={() => onMoveUp(option.value)}
+                >
+                    <ArrowUp className="h-4 w-4" />
+                </Button>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={isLast}
+                    onClick={() => onMoveDown(option.value)}
+                >
+                    <ArrowDown className="h-4 w-4" />
+                </Button>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onRename(option.value)}
+                >
+                    <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => onDelete(option.value)}
+                >
+                    <X className="h-4 w-4" />
+                </Button>
+            </div>
+        </div>
+    )
+}
+
 /** 标题栏配置切换区组件，统一承载配置选择与自动烧录开关 */
 export function ProfileSwitcher() {
     const [autoFlashEnabled, setAutoFlashEnabled] = useState(false)
     const [profileOptions, setProfileOptions] = useState(initialProfileOptions)
     const [selectedProfile, setSelectedProfile] = useState(initialProfileOptions[0]?.value ?? '')
     const [selectOpen, setSelectOpen] = useState(false)
+    const [manageDialogOpen, setManageDialogOpen] = useState(false)
     const [renameDialogOpen, setRenameDialogOpen] = useState(false)
     const [renamingProfileValue, setRenamingProfileValue] = useState('')
     const [renameInputValue, setRenameInputValue] = useState('')
     const confirm = useConfirm()
+    const sensors = useSensors(
+        useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+        useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 8 } })
+    )
 
     /** 当前选中配置的显示名称，删除后会自动回落到可用配置 */
     const selectedProfileLabel = useMemo(
@@ -70,7 +210,12 @@ export function ProfileSwitcher() {
 
         setProfileOptions(nextProfileOptions)
         setSelectedProfile(nextProfile.value)
+    }
+
+    /** 打开统一的配置管理弹窗，将列表级操作集中到单独界面中处理 */
+    function openManageDialog() {
         setSelectOpen(false)
+        setManageDialogOpen(true)
     }
 
     /** 用户确认后再真正删除配置，避免标题栏区域误触导致配置丢失 */
@@ -89,6 +234,54 @@ export function ProfileSwitcher() {
         }
 
         setSelectedProfile(nextProfileOptions[0]?.value ?? '')
+    }
+
+    /** 将指定配置移动到目标配置位置，用于拖拽排序和按钮排序复用同一套逻辑 */
+    function handleReorderProfiles(sourceProfileValue: string, targetProfileValue: string) {
+        setProfileOptions((currentOptions) => {
+            const sourceIndex = currentOptions.findIndex((option) => option.value === sourceProfileValue)
+            const targetIndex = currentOptions.findIndex((option) => option.value === targetProfileValue)
+
+            if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) {
+                return currentOptions
+            }
+
+            return arrayMove(currentOptions, sourceIndex, targetIndex)
+        })
+    }
+
+    /** 将配置项向上移动一位，保留按钮式排序作为拖拽的补充交互 */
+    function handleMoveProfileUp(profileValue: string) {
+        const currentIndex = profileOptions.findIndex((option) => option.value === profileValue)
+
+        if (currentIndex <= 0) {
+            return
+        }
+
+        handleReorderProfiles(profileValue, profileOptions[currentIndex - 1].value)
+    }
+
+    /** 将配置项向下移动一位，便于精确调整少量顺序 */
+    function handleMoveProfileDown(profileValue: string) {
+        const currentIndex = profileOptions.findIndex((option) => option.value === profileValue)
+
+        if (currentIndex === -1 || currentIndex >= profileOptions.length - 1) {
+            return
+        }
+
+        handleReorderProfiles(profileValue, profileOptions[currentIndex + 1].value)
+    }
+
+    /** 处理拖拽排序完成后的列表重排，dnd-kit 会自动驱动过渡动画 */
+    function handleDragEnd(event: DragEndEvent) {
+        const activeProfileValue = String(event.active.id)
+        const overProfileValue = event.over ? String(event.over.id) : ''
+
+        if (!overProfileValue || activeProfileValue === overProfileValue) {
+            return
+        }
+
+        handleReorderProfiles(activeProfileValue, overProfileValue)
     }
 
     /** 通过全局确认弹窗函数式唤起删除确认，避免在 Select 内部耦合模态框布局 */
@@ -187,48 +380,65 @@ export function ProfileSwitcher() {
                         <SelectPrimitive.Item
                             key={option.value}
                             value={option.value}
-                            className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-16 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                            className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
                         >
                             <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
-                            <button
-                                type="button"
-                                className="absolute right-8 inline-flex h-5 w-5 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                aria-label={`重命名配置 ${option.label}`}
-                                title={`重命名配置 ${option.label}`}
-                                onPointerDown={(event) => {
-                                    event.preventDefault()
-                                    event.stopPropagation()
-                                    requestRenameProfile(option.value)
-                                }}
-                            >
-                                <Pencil className="h-3 w-3" />
-                            </button>
-                            <button
-                                type="button"
-                                className="absolute right-2 inline-flex h-5 w-5 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                aria-label={`删除配置 ${option.label}`}
-                                title={`删除配置 ${option.label}`}
-                                onPointerDown={(event) => {
-                                    event.preventDefault()
-                                    event.stopPropagation()
-                                    void requestDeleteProfile(option.value)
-                                }}
-                            >
-                                <X className="h-3.5 w-3.5" />
-                            </button>
                         </SelectPrimitive.Item>
                     ))}
                     <SelectSeparator />
                     <button
                         type="button"
-                        className="flex pointer w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
-                        onClick={handleCreateProfile}
+                        className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
+                        onClick={openManageDialog}
                     >
-                        <Plus className="h-4 w-4" />
-                        新增配置
+                        <Settings2 className="h-4 w-4" />
+                        管理配置
                     </button>
                 </SelectContent>
             </Select>
+
+            <Dialog open={manageDialogOpen} onOpenChange={setManageDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>管理配置</DialogTitle>
+                        <DialogDescription>
+                            统一管理配置的名称、显示顺序和删除操作。可直接拖拽列表项调整顺序，修改会立即反映到标题栏下拉菜单。
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
+                        <SortableContext items={profileOptions.map((option) => option.value)} strategy={verticalListSortingStrategy}>
+                            <div className="space-y-2 pt-2">
+                                {profileOptions.map((option, index) => (
+                                    <SortableProfileItem
+                                        key={option.value}
+                                        index={index}
+                                        option={option}
+                                        selectedProfile={selectedProfile}
+                                        totalCount={profileOptions.length}
+                                        onMoveDown={handleMoveProfileDown}
+                                        onMoveUp={handleMoveProfileUp}
+                                        onRename={requestRenameProfile}
+                                        onDelete={(profileValue) => {
+                                            void requestDeleteProfile(profileValue)
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    </DndContext>
+
+                    <DialogFooter className="flex items-center justify-between sm:justify-between">
+                        <Button type="button" onClick={handleCreateProfile}>
+                            <Plus className="h-4 w-4" />
+                            新增配置
+                        </Button>
+                        <Button variant="outline" type="button" onClick={() => setManageDialogOpen(false)}>
+                            完成
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
                 <DialogContent>
