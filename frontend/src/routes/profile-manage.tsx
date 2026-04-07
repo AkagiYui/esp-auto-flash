@@ -113,40 +113,40 @@ function SortableProfileItem({
                 <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
+                    className="h-8 gap-1 px-2 sm:h-8"
                     disabled={index === 0}
                     onClick={() => onMoveUp(option.value)}
                 >
                     <ArrowUp className="h-4 w-4" />
+                    <span className="hidden sm:inline">上移</span>
                 </Button>
                 <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
+                    className="h-8 gap-1 px-2 sm:h-8"
                     disabled={isLast}
                     onClick={() => onMoveDown(option.value)}
                 >
                     <ArrowDown className="h-4 w-4" />
+                    <span className="hidden sm:inline">下移</span>
                 </Button>
                 <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
+                    className="h-8 gap-1 px-2 sm:h-8"
                     onClick={() => onRename(option.value)}
                 >
                     <Pencil className="h-4 w-4" />
+                    <span className="hidden sm:inline">重命名</span>
                 </Button>
                 <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    className="h-8 gap-1 px-2 text-muted-foreground hover:text-destructive sm:h-8"
                     onClick={() => onDelete(option.value)}
                 >
                     <X className="h-4 w-4" />
+                    <span className="hidden sm:inline">删除</span>
                 </Button>
             </div>
         </div>
