@@ -26,7 +26,7 @@ export function ProfileSwitcher() {
         <div className="flex items-center gap-2">
             <Select defaultValue="default">
                 <SelectTrigger className="h-8 w-[180px] border-none bg-transparent px-2.5 text-sm shadow-none hover:bg-accent/70 focus:ring-0">
-                    <div className="flex min-w-0 flex-1 items-center">
+                    <div className="flex min-w-0 flex-1 items-center" title='点击切换配置'>
                         <SelectValue placeholder="选择配置" />
                     </div>
                     {/* 在触发器内部单独拦截事件，避免点击开关时误触发下拉框 */}
@@ -36,6 +36,7 @@ export function ProfileSwitcher() {
                         onPointerDown={(event) => event.stopPropagation()}
                     >
                         <Switch
+                            title="切换自动烧录"
                             aria-label="切换自动烧录"
                             checked={autoFlashEnabled}
                             onCheckedChange={setAutoFlashEnabled}
