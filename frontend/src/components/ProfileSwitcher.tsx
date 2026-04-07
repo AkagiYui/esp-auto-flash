@@ -1,7 +1,8 @@
 import * as SelectPrimitive from '@radix-ui/react-select'
-import { useMemo, useState } from 'react'
-import { Plus, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Pencil, Plus, X } from 'lucide-react'
 
+import { Button } from '@/components/ui/Button'
 import {
     Select,
     SelectContent,
@@ -10,6 +11,15 @@ import {
     SelectValue,
 } from '@/components/ui/Select'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/Dialog'
+import { Input } from '@/components/ui/Input'
 import { Switch } from '@/components/ui/Switch'
 
 /** 模拟配置列表，后续再接入真实配置管理逻辑 */
@@ -33,6 +43,9 @@ export function ProfileSwitcher() {
     const [profileOptions, setProfileOptions] = useState(initialProfileOptions)
     const [selectedProfile, setSelectedProfile] = useState(initialProfileOptions[0]?.value ?? '')
     const [selectOpen, setSelectOpen] = useState(false)
+    const [renameDialogOpen, setRenameDialogOpen] = useState(false)
+    const [renamingProfileValue, setRenamingProfileValue] = useState('')
+    const [renameInputValue, setRenameInputValue] = useState('')
     const confirm = useConfirm()
 
     /** 当前选中配置的显示名称，删除后会自动回落到可用配置 */
@@ -40,6 +53,15 @@ export function ProfileSwitcher() {
         () => profileOptions.find((option) => option.value === selectedProfile)?.label,
         [profileOptions, selectedProfile]
     )
+
+    /** 当前准备重命名的配置项，用于弹窗内展示与提交时定位目标 */
+    const renamingProfile = useMemo(
+        () => profileOptions.find((option) => option.value === renamingProfileValue),
+        [profileOptions, renamingProfileValue]
+    )
+
+    /** 重命名输入内容去除首尾空白后用于校验，避免仅输入空格也被提交 */
+    const normalizedRenameValue = renameInputValue.trim()
 
     /** 点击新增时直接追加一条模拟配置，并自动切换到新建项 */
     function handleCreateProfile() {
@@ -94,6 +116,49 @@ export function ProfileSwitcher() {
         handleDeleteProfile(profileValue)
     }
 
+    /** 打开重命名弹窗并预填当前配置名称，保证在 Wails 环境下也能正常工作 */
+    function requestRenameProfile(profileValue: string) {
+        const profile = profileOptions.find((option) => option.value === profileValue)
+
+        if (!profile) {
+            return
+        }
+
+        setSelectOpen(false)
+
+        setRenamingProfileValue(profile.value)
+        setRenameInputValue(profile.label)
+        setRenameDialogOpen(true)
+    }
+
+    /** 提交重命名表单时更新本地模拟配置列表，并在成功后关闭弹窗 */
+    function handleRenameSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+
+        if (!renamingProfile || !normalizedRenameValue || normalizedRenameValue === renamingProfile.label) {
+            return
+        }
+
+        setProfileOptions((currentOptions) =>
+            currentOptions.map((option) =>
+                option.value === renamingProfile.value
+                    ? { ...option, label: normalizedRenameValue }
+                    : option
+            )
+        )
+        setRenameDialogOpen(false)
+    }
+
+    /** 弹窗关闭时清理临时状态，避免下次打开仍残留旧输入 */
+    useEffect(() => {
+        if (renameDialogOpen) {
+            return
+        }
+
+        setRenamingProfileValue('')
+        setRenameInputValue('')
+    }, [renameDialogOpen])
+
     return (
         <div className="flex items-center gap-2">
             <Select open={selectOpen} onOpenChange={setSelectOpen} value={selectedProfile} onValueChange={setSelectedProfile}>
@@ -122,9 +187,22 @@ export function ProfileSwitcher() {
                         <SelectPrimitive.Item
                             key={option.value}
                             value={option.value}
-                            className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-10 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                            className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-16 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
                         >
                             <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
+                            <button
+                                type="button"
+                                className="absolute right-8 inline-flex h-5 w-5 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                aria-label={`重命名配置 ${option.label}`}
+                                title={`重命名配置 ${option.label}`}
+                                onPointerDown={(event) => {
+                                    event.preventDefault()
+                                    event.stopPropagation()
+                                    requestRenameProfile(option.value)
+                                }}
+                            >
+                                <Pencil className="h-3 w-3" />
+                            </button>
                             <button
                                 type="button"
                                 className="absolute right-2 inline-flex h-5 w-5 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -151,6 +229,48 @@ export function ProfileSwitcher() {
                     </button>
                 </SelectContent>
             </Select>
+
+            <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+                <DialogContent>
+                    <form className="space-y-4" onSubmit={handleRenameSubmit}>
+                        <DialogHeader>
+                            <DialogTitle>重命名配置</DialogTitle>
+                            <DialogDescription>
+                                修改当前模拟配置的显示名称，保存后会立即反映到下拉菜单中。
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground" htmlFor="profile-rename-input">
+                                配置名称
+                            </label>
+                            <Input
+                                id="profile-rename-input"
+                                value={renameInputValue}
+                                maxLength={32}
+                                placeholder="请输入配置名称"
+                                autoFocus
+                                onChange={(event) => setRenameInputValue(event.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                请输入 1 到 32 个字符。
+                            </p>
+                        </div>
+
+                        <DialogFooter>
+                            <Button variant="outline" type="button" onClick={() => setRenameDialogOpen(false)}>
+                                取消
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={!renamingProfile || !normalizedRenameValue || normalizedRenameValue === renamingProfile.label}
+                            >
+                                保存名称
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
