@@ -60,7 +60,7 @@
 html,
 body,
 #app {
-  min-height: 100%;
+  height: 100%;
 }
 
 body {
@@ -68,6 +68,12 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   background-color: var(--background);
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* 路由内容区单独承担滚动，保证标题栏区域不参与滚动条布局 */
+.route-scroll-area {
+  scrollbar-gutter: stable;
 }
