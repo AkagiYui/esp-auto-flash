@@ -4,10 +4,10 @@ import { ArrowRight, Cpu, PlugZap, Send, TimerReset } from 'lucide-react'
 import { Events } from '@wailsio/runtime'
 
 import { GreetService } from '../../bindings/changeme'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Label } from '@/components/ui/Label'
 
 export const Route = createFileRoute('/')({ component: HomePage })
 

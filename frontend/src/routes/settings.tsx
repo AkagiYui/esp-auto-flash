@@ -1,19 +1,19 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Label } from '@/components/ui/Label'
+import { Switch } from '@/components/ui/Switch'
+import { Input } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
+import { Separator } from '@/components/ui/Separator'
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select'
+} from '@/components/ui/Select'
 
 export const Route = createFileRoute('/settings')({ component: SettingsPage })
 

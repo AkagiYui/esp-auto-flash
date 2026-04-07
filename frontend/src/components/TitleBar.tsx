@@ -3,7 +3,7 @@ import { Window } from '@wailsio/runtime'
 import { Home, Plus, Settings } from 'lucide-react'
 import type { CSSProperties, MouseEvent } from 'react'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import {
     Select,
     SelectContent,
@@ -11,7 +11,7 @@ import {
     SelectSeparator,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select'
+} from '@/components/ui/Select'
 
 const titleBarDragStyle: CSSProperties = {
     '--wails-draggable': 'drag',

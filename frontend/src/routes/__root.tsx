@@ -1,7 +1,7 @@
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 
 import '../styles.css'
-import { TitleBar } from '@/components/title-bar'
+import { TitleBar } from '@/components/TitleBar'
 
 export const Route = createRootRoute({
     component: RootComponent,
