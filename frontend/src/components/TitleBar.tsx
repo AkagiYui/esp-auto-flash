@@ -93,7 +93,7 @@ export function TitleBar() {
 
                 {/* 右侧区域贴近窗口右边，保留安全边距 */}
                 <div
-                    className="absolute inset-y-0 right-3 flex items-center"
+                    className="absolute inset-y-0 right-1 flex items-center"
                     onDoubleClick={(event) => event.stopPropagation()}
                     style={titleBarNoDragStyle}
                 >
