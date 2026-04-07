@@ -1,7 +1,17 @@
-import { defineConfig } from "vite";
-import wails from "@wailsio/runtime/plugins/vite";
+import { defineConfig } from 'vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import viteReact from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import wails from '@wailsio/runtime/plugins/vite'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [wails("./bindings")],
-});
+  resolve: {
+    tsconfigPaths: true,
+  },
+  plugins: [
+    tailwindcss(),
+    tanstackRouter({ target: 'react', autoCodeSplitting: true }),
+    viteReact(),
+    wails('./bindings'),
+  ],
+})
