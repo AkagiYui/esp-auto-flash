@@ -1,6 +1,8 @@
+import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 
 import { Button } from '@/components/ui/Button'
+import { cn } from '@/lib/utils'
 
 type ConfirmDialogOptions = {
     cancelText?: string
@@ -19,6 +21,38 @@ type ConfirmDialogContextValue = {
 }
 
 const ConfirmDialogContext = createContext<ConfirmDialogContextValue | null>(null)
+
+/** 确认弹窗传送门，统一挂载到顶层避免层级冲突 */
+const ConfirmDialogPortal = AlertDialogPrimitive.Portal
+
+/** 确认弹窗遮罩层，复用现有模态视觉表现并由 Radix 负责无障碍语义 */
+function ConfirmDialogOverlay({ className, ...props }: AlertDialogPrimitive.AlertDialogOverlayProps) {
+    return (
+        <AlertDialogPrimitive.Overlay
+            className={cn(
+                'fixed inset-0 z-50 bg-black/50 backdrop-blur-[1px] data-[state=closed]:animate-out data-[state=open]:animate-in',
+                className
+            )}
+            {...props}
+        />
+    )
+}
+
+/** 确认弹窗内容容器，统一处理布局和层级 */
+function ConfirmDialogContent({ className, ...props }: AlertDialogPrimitive.AlertDialogContentProps) {
+    return (
+        <ConfirmDialogPortal>
+            <ConfirmDialogOverlay />
+            <AlertDialogPrimitive.Content
+                className={cn(
+                    'fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-card p-5 text-card-foreground shadow-2xl duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in focus-visible:outline-none',
+                    className
+                )}
+                {...props}
+            />
+        </ConfirmDialogPortal>
+    )
+}
 
 /** 通用确认弹窗提供器，统一管理全局确认交互与函数式唤起能力 */
 export function ConfirmDialogProvider({ children }: { children: ReactNode }) {
@@ -54,41 +88,42 @@ export function ConfirmDialogProvider({ children }: { children: ReactNode }) {
             {children}
 
             {request ? (
-                <div
-                    className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4"
-                    onClick={() => handleClose(false)}
+                <AlertDialogPrimitive.Root
+                    open
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            handleClose(false)
+                        }
+                    }}
                 >
-                    <div
-                        className="w-full max-w-md rounded-xl border bg-card p-5 text-card-foreground shadow-2xl"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="confirm-dialog-title"
-                        aria-describedby="confirm-dialog-description"
-                        onClick={(event) => event.stopPropagation()}
-                    >
+                    <ConfirmDialogContent>
                         <div className="space-y-2">
-                            <h3 id="confirm-dialog-title" className="text-base font-semibold">
+                            <AlertDialogPrimitive.Title className="text-base font-semibold">
                                 {request.title}
-                            </h3>
-                            <p id="confirm-dialog-description" className="text-sm leading-6 text-muted-foreground">
+                            </AlertDialogPrimitive.Title>
+                            <AlertDialogPrimitive.Description className="text-sm leading-6 text-muted-foreground">
                                 {request.description}
-                            </p>
+                            </AlertDialogPrimitive.Description>
                         </div>
 
                         <div className="mt-5 flex justify-end gap-2">
-                            <Button variant="outline" type="button" onClick={() => handleClose(false)}>
-                                {request.cancelText}
-                            </Button>
-                            <Button
-                                variant={request.variant === 'destructive' ? 'destructive' : 'default'}
-                                type="button"
-                                onClick={() => handleClose(true)}
-                            >
-                                {request.confirmText}
-                            </Button>
+                            <AlertDialogPrimitive.Cancel asChild>
+                                <Button variant="outline" type="button" onClick={() => handleClose(false)}>
+                                    {request.cancelText}
+                                </Button>
+                            </AlertDialogPrimitive.Cancel>
+                            <AlertDialogPrimitive.Action asChild>
+                                <Button
+                                    variant={request.variant === 'destructive' ? 'destructive' : 'default'}
+                                    type="button"
+                                    onClick={() => handleClose(true)}
+                                >
+                                    {request.confirmText}
+                                </Button>
+                            </AlertDialogPrimitive.Action>
                         </div>
-                    </div>
-                </div>
+                    </ConfirmDialogContent>
+                </AlertDialogPrimitive.Root>
             ) : null}
         </ConfirmDialogContext.Provider>
     )
