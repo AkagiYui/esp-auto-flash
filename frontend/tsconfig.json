@@ -5,6 +5,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "noEmit": true,
     "moduleResolution": "bundler",
     /**
      * The target and module can be set to ESNext to allow writing modern JavaScript, 
@@ -21,5 +22,8 @@
     "strict": true,
     "skipLibCheck": true,
   },
-  "include": ["src", "bindings"]
+  "include": [
+    "src",
+    "bindings"
+  ]
 }
