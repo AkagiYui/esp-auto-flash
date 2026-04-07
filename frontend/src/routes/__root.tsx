@@ -56,10 +56,15 @@ function RootComponent() {
                 className="sticky top-0 z-50 h-[38px] border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
                 style={titleBarDragStyle}
             >
-                <div className="relative h-full w-full">
+                <div
+                    className="relative h-full w-full cursor-default select-none"
+                    onDoubleClick={handleTitleDoubleClick}
+                    title="双击切换窗口最大化"
+                >
                     {/* 左侧区域紧贴红绿灯右侧，预留 macOS 安全距离 */}
                     <div
                         className="absolute inset-y-0 left-[78px] flex items-center"
+                        onDoubleClick={(event) => event.stopPropagation()}
                         style={titleBarNoDragStyle}
                     >
                         <Select defaultValue="default">
@@ -91,9 +96,7 @@ function RootComponent() {
                     {/* 中间标题始终相对整个窗口居中，保留拖拽与双击缩放能力 */}
                     <div className="absolute inset-0 flex items-center justify-center px-4">
                         <div
-                            className="flex h-full min-w-[180px] max-w-[40vw] select-none items-center justify-center px-6 text-sm font-semibold tracking-[0.02em]"
-                            onDoubleClick={handleTitleDoubleClick}
-                            title="双击切换窗口最大化"
+                            className="flex h-full min-w-[180px] max-w-[40vw] items-center justify-center px-6 text-sm font-semibold tracking-[0.02em]"
                         >
                             <span className="truncate">ESP Auto Flash</span>
                         </div>
@@ -102,6 +105,7 @@ function RootComponent() {
                     {/* 右侧区域贴近窗口右边，保留安全边距 */}
                     <div
                         className="absolute inset-y-0 right-3 flex items-center"
+                        onDoubleClick={(event) => event.stopPropagation()}
                         style={titleBarNoDragStyle}
                     >
                         <nav className="flex items-center gap-1">
