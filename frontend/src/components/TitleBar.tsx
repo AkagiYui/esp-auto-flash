@@ -86,8 +86,8 @@ export function TitleBar() {
                     </Select>
                 </div>
 
-                {/* 中间标题在较窄窗口下隐藏，避免与左右操作区发生挤压 */}
-                <div className="absolute inset-0 hidden items-center justify-center px-4 md:flex">
+                {/* 中间标题层不接管鼠标事件，避免遮挡左右两侧可交互区域 */}
+                <div className="pointer-events-none absolute inset-0 hidden items-center justify-center px-4 md:flex">
                     <div className="flex h-full min-w-[180px] max-w-[40vw] items-center justify-center px-6 text-sm font-semibold tracking-[0.02em]">
                         <span className="truncate">ESP Auto Flash</span>
                     </div>
