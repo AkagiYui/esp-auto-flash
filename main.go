@@ -62,6 +62,16 @@ func main() {
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
 		BackgroundColour: application.NewRGB(27, 38, 54),
+		// 启用开发者工具，并允许通过常见快捷键直接打开调试面板。
+		DevToolsEnabled:  true,
+		KeyBindings: map[string]func(window application.Window){
+			"F12": func(window application.Window) {
+				window.OpenDevTools()
+			},
+			"Cmd+Option+I": func(window application.Window) {
+				window.OpenDevTools()
+			},
+		},
 		URL:              "/",
 	})
 
