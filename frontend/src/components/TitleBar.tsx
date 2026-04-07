@@ -1,10 +1,11 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { Window } from '@wailsio/runtime'
 import { Home, Logs, Settings } from 'lucide-react'
 import type { CSSProperties, MouseEvent } from 'react'
 
 import { ProfileSwitcher } from '@/components/ProfileSwitcher'
 import { Button } from '@/components/ui/Button'
+import { cn } from '@/lib/utils'
 
 const titleBarDragStyle: CSSProperties = {
     '--wails-draggable': 'drag',
@@ -30,6 +31,15 @@ async function handleTitleDoubleClick(event: MouseEvent<HTMLDivElement>) {
 
 /** 应用标题栏组件 - 承载窗口拖拽、导航和配置切换入口 */
 export function TitleBar() {
+    // 读取当前路由路径，用于将激活中的导航按钮切换为主题色样式。
+    const pathname = useRouterState({
+        select: (state) => state.location.pathname,
+    })
+
+    const isHomeActive = pathname === '/'
+    const isLogsActive = pathname.startsWith('/logs')
+    const isSettingsActive = pathname.startsWith('/settings')
+
     return (
         <header
             className="z-50 h-[38px] shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
@@ -65,19 +75,28 @@ export function TitleBar() {
                     <nav className="flex items-center gap-1">
                         {/* 导航入口按首页、日志、设置排列，便于后续扩展更多页面 */}
                         <Button variant="ghost" size="sm" asChild>
-                            <Link to="/">
+                            <Link
+                                to="/"
+                                className={cn(isHomeActive && 'text-primary hover:text-primary')}
+                            >
                                 <Home className="h-4 w-4" />
                                 首页
                             </Link>
                         </Button>
                         <Button variant="ghost" size="sm" asChild>
-                            <Link to="/logs">
+                            <Link
+                                to="/logs"
+                                className={cn(isLogsActive && 'text-primary hover:text-primary')}
+                            >
                                 <Logs className="h-4 w-4" />
                                 日志
                             </Link>
                         </Button>
                         <Button variant="ghost" size="sm" asChild>
-                            <Link to="/settings">
+                            <Link
+                                to="/settings"
+                                className={cn(isSettingsActive && 'text-primary hover:text-primary')}
+                            >
                                 <Settings className="h-4 w-4" />
                                 设置
                             </Link>
