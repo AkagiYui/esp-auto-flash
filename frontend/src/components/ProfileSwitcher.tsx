@@ -95,9 +95,12 @@ export function ProfileSwitcher() {
                                     className={`h-2.5 w-2.5 rounded-full transition-[background-color,opacity,transform] ${triggerIndicatorClassNames.inner}`}
                                 />
                             </span>
-                            <SelectValue placeholder="选择配置">
-                                {selectedProfileLabel}
-                            </SelectValue>
+                            {/* 仅将标题文本相对状态指示器上移 1px，优化视觉重心。 */}
+                            <span className="min-w-0 translate-y-[-1px]">
+                                <SelectValue placeholder="选择配置">
+                                    {selectedProfileLabel}
+                                </SelectValue>
+                            </span>
                         </div>
                     </SelectTrigger>
                     {/* 开关绝对定位在触发器内部右侧，单独承载点击事件 */}
