@@ -18,6 +18,13 @@ import {
     selectedProfileRunningAtom,
 } from '@/lib/profile-store'
 
+/** 根据运行状态返回下拉项状态点样式，绿色表示运行中，灰色表示未运行。 */
+function getProfileStatusDotClassName(running: boolean) {
+    return running
+        ? 'bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.16)]'
+        : 'bg-slate-400 shadow-[0_0_0_3px_rgba(148,163,184,0.14)]'
+}
+
 /** 标题栏配置切换区组件，统一承载配置选择与自动烧录开关 */
 export function ProfileSwitcher() {
     const [selectedProfileRunning, setSelectedProfileRunning] = useAtom(selectedProfileRunningAtom)
@@ -59,8 +66,13 @@ export function ProfileSwitcher() {
                         <SelectPrimitive.Item
                             key={option.value}
                             value={option.value}
-                            className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                            className="relative flex w-full cursor-default select-none items-center gap-2 rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
                         >
+                            {/* 用小圆点直观表示当前配置是否处于运行状态。 */}
+                            <span
+                                aria-hidden="true"
+                                className={`h-2.5 w-2.5 rounded-full transition-colors ${getProfileStatusDotClassName(option.running)}`}
+                            />
                             <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
                         </SelectPrimitive.Item>
                     ))}
@@ -71,7 +83,6 @@ export function ProfileSwitcher() {
                         onClick={() => setSelectOpen(false)}
                     >
                         <Settings2 className="h-4 w-4" />
-                        管理配置
                     </Link>
                 </SelectContent>
             </Select>
