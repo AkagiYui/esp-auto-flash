@@ -15,11 +15,6 @@ function getRootElement() {
 }
 
 async function bootstrap() {
-  // 开发态提前加载 jotai-devtools，确保默认 store 在首次创建时就带上调试钩子。
-  if (import.meta.env.DEV) {
-    await import('jotai-devtools')
-  }
-
   const rootElement = getRootElement()
 
   if (!rootElement.innerHTML) {
