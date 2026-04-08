@@ -79,6 +79,7 @@ body {
 }
 
 @keyframes profile-status-dot-breathe {
+
   0%,
   100% {
     opacity: 1;
@@ -92,6 +93,7 @@ body {
 }
 
 @keyframes profile-status-ring-glow {
+
   0%,
   100% {
     box-shadow: 0 0 0 0 rgba(110, 231, 183, 0.12);
