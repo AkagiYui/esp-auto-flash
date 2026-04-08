@@ -77,3 +77,37 @@ body {
 .route-scroll-area {
   scrollbar-gutter: stable;
 }
+
+@keyframes profile-status-dot-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes profile-status-ring-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(110, 231, 183, 0.12);
+  }
+
+  50% {
+    box-shadow: 0 0 0 4px rgba(110, 231, 183, 0.2);
+  }
+}
+
+/* 配置切换器状态点呼吸动画，仅用于 trigger 左侧总览指示器。 */
+.profile-status-dot-breathe {
+  animation: profile-status-dot-breathe 1.8s ease-in-out infinite;
+}
+
+/* 外圈根据全局运行态做柔和发光，避免与内部实心点的动效混淆。 */
+.profile-status-ring-glow {
+  animation: profile-status-ring-glow 1.8s ease-in-out infinite;
+}

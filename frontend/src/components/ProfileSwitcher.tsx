@@ -25,6 +25,35 @@ function getProfileStatusDotClassName(running: boolean) {
         : 'bg-slate-400 shadow-[0_0_0_3px_rgba(148,163,184,0.14)]'
 }
 
+/** 根据当前配置与其他配置的运行情况，返回 trigger 状态指示器样式。 */
+function getTriggerStatusIndicatorClassNames(currentRunning: boolean, otherRunning: boolean) {
+    if (currentRunning && otherRunning) {
+        return {
+            inner: 'bg-emerald-500 profile-status-dot-breathe',
+            outer: 'bg-emerald-300/20 profile-status-ring-glow',
+        }
+    }
+
+    if (currentRunning) {
+        return {
+            inner: 'bg-emerald-500 profile-status-dot-breathe',
+            outer: 'bg-slate-400/20',
+        }
+    }
+
+    if (otherRunning) {
+        return {
+            inner: 'bg-slate-400',
+            outer: 'bg-emerald-300/20 profile-status-ring-glow',
+        }
+    }
+
+    return {
+        inner: 'bg-slate-400',
+        outer: 'bg-slate-400/20',
+    }
+}
+
 /** 标题栏配置切换区组件，统一承载配置选择与自动烧录开关 */
 export function ProfileSwitcher() {
     const [selectedProfileRunning, setSelectedProfileRunning] = useAtom(selectedProfileRunningAtom)
@@ -38,6 +67,18 @@ export function ProfileSwitcher() {
         [profileOptions, selectedProfile]
     )
 
+    /** 统计除当前配置外是否还有其他配置正在运行，用于决定外圈表现。 */
+    const otherProfilesRunning = useMemo(
+        () => profileOptions.some((option) => option.value !== selectedProfile && option.running),
+        [profileOptions, selectedProfile]
+    )
+
+    /** trigger 左侧状态指示器需要同时反映当前配置和全局运行态。 */
+    const triggerIndicatorClassNames = useMemo(
+        () => getTriggerStatusIndicatorClassNames(selectedProfileRunning, otherProfilesRunning),
+        [otherProfilesRunning, selectedProfileRunning]
+    )
+
     return (
         <div className="flex items-center gap-2">
             <Select open={selectOpen} onOpenChange={setSelectOpen} value={selectedProfile} onValueChange={setSelectedProfile}>
@@ -45,6 +86,15 @@ export function ProfileSwitcher() {
                 <div className="relative w-[180px]">
                     <SelectTrigger className="h-8 w-[180px] border-none bg-transparent px-2.5 pr-1.5 text-sm shadow-none hover:bg-accent/70 focus:ring-0">
                         <div className="flex min-w-0 flex-1 items-center" title="点击切换配置">
+                            {/* 左侧双圆状态指示器用于概览当前配置与其他配置的运行关系。 */}
+                            <span
+                                aria-hidden="true"
+                                className={`mr-2 inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full transition-[background-color,box-shadow] ${triggerIndicatorClassNames.outer}`}
+                            >
+                                <span
+                                    className={`h-2.5 w-2.5 rounded-full transition-[background-color,opacity,transform] ${triggerIndicatorClassNames.inner}`}
+                                />
+                            </span>
                             <SelectValue placeholder="选择配置">
                                 {selectedProfileLabel}
                             </SelectValue>
@@ -83,6 +133,7 @@ export function ProfileSwitcher() {
                         onClick={() => setSelectOpen(false)}
                     >
                         <Settings2 className="h-4 w-4" />
+                        管理配置
                     </Link>
                 </SelectContent>
             </Select>
